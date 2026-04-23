@@ -43,8 +43,45 @@ function checkwinner(arr){
         }
     }
 }
+let data;
+wss.on("connection", (ws) => {
+    console.log("Client connected");
+    game = [
+        ["","",""],
+        ["","",""],
+        ["","",""]
+   
 
-while(true){
+];
+ over = false;
 
-    
-}
+    ws.on("message", (msg) => {
+        
+        data = JSON.parse(msg.toString());
+        game[data.col][data.row] = data.team;
+        currentmove = data.team;
+        checkwinner(game);
+        
+        wss.clients.forEach(client => {
+                if(client.readyState === WebSocket.OPEN){
+
+        if(over){
+             
+                client.send(JSON.stringify({
+            over:true,
+            win:winner,
+            message: game,
+            move:currentmove}));
+        }
+        else{
+         client.send(JSON.stringify({
+            over:false,
+            message: game,
+            move:currentmove
+        }))};
+                }})
+
+    });
+
+     
+});

@@ -2,11 +2,16 @@ const canvas = document.getElementById('mycanvas');
 const c = canvas.getContext("2d");
 
 const socket = new WebSocket("ws://localhost:8080");
+socket.onopen = () => {
+    console.log("Connected to server");
+};
 
 c.fillStyle = '#F5C26B';
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+let team = '';
 
 let mousex = 0;
 let mousey = 0;
@@ -22,7 +27,7 @@ let game = [
 
 ];
 
-let currentmove = "X";
+let currentmove = "O";
 
 let over = false;
 let winner = "";
@@ -51,33 +56,22 @@ window.addEventListener('mouseup',(event)=>{
 btnpress = false;
 })
 
-function checkwinner(arr){
-    for(let i = 0;i<3;i++){
-        if(arr[0][i]!= "" && arr[1][i] == arr[2][i] && arr[1][i] == arr[0][i] ){
-            over = true;
-            winner = arr[1][i];
-            return;
-        }
-        if(arr[i][0]!= "" && arr[i][0] == arr[i][1] && arr[i][1] == arr[i][2]){
-            over = true;
-            winner = arr[i][1];
-            return;
-        }
-        if(arr[1][1]!= "" && arr[1][1] == arr[2][2] && arr[1][1] == arr[0][0]){
-            over = true;
-            winner = arr[1][1];
-            return;
-        }
-        if(arr[0][2]!= "" && arr[0][2] == arr[1][1] && arr[1][1] == arr[2][0]){
-            over = true;
-            winner = arr[1][1];
-            return;
-        }
+ socket.onmessage = (msg)=>{
+    let values = JSON.parse(msg.data);
+    if(values.over){
+        over=true;
+        winner = values.win;
     }
-}
+    
+    game[0] = values.message[0];
+    game[1] = values.message[1];
+    game[2] = values.message[2];
+    currentmove = values.move;
+
+};
 
 function animate(){
-    checkwinner(game);
+   
 
 c.fillStyle = '#F5C26B';
 c.fillRect(0,0,window.innerWidth,window.innerHeight);
@@ -110,6 +104,10 @@ c.lineWidth = 5;
 c.strokeStyle = "blue";
 c.stroke();
 
+
+
+
+
 for(let i = 0;i<3;i++){
     for(let j = 0; j<3;j++){
         if(game[i][j]!=""){
@@ -121,19 +119,21 @@ for(let i = 0;i<3;i++){
 }
 
 if(btnpress){
-    if(game[column][row]===""){
-        game[column][row] = currentmove;
-        currentmove = currentmove=="X"?"O":"X";
+    // currentmove = currentmove=="X"?"O":"X";
    
     // send mouse position to server
-
-    }
+         socket.send(JSON.stringify({
+            team: currentmove=="X"?"O":"X",
+            row: row,
+            col: column
+        }));
+    
     btnpress = false;
 }
 
 if(!over){
 c.font = "50px Arial";
-let turn = currentmove=="X"?1:2;
+let turn = currentmove=="X"?2:1;
 c.lineWidth = 0.8;
 c.strokeText(`Player ${turn}`,700,150);
 c.strokeText(`Turn`,700,200);
