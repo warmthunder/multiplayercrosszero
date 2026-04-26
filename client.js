@@ -4,6 +4,7 @@ const c = canvas.getContext("2d");
 const socket = new WebSocket("wss://multiplayercrosszeroserver.onrender.com");
 socket.onopen = () => {
     console.log("Connected to server");
+    server = true;
 };
 
 c.fillStyle = '#F5C26B';
@@ -18,6 +19,7 @@ let mousey = 0;
 let btnpress = false;
 
 let lessplayer = false;
+let server = false;
 
 let row = -1;
 let column = -1;
@@ -145,6 +147,8 @@ c.strokeText(welcome,700,150);
 
 }
 
+if(server){
+
 if(lessplayer){
     c.font = "50px Arial";
 // let welcome = turn?"Your turn":"Not your turn";
@@ -168,6 +172,7 @@ if(over){
     c.font = "50px Arial";
     c.lineWidth = 0.8;
     c.strokeText(`${winner} Won!`,700,350);
+}
 }
 if(!over)
 requestAnimationFrame(animate);
