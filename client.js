@@ -138,7 +138,7 @@ for(let i = 0;i<3;i++){
         }
     }
 }
-
+if(server){
 if(!over && !lessplayer){
 c.font = "50px Arial";
 let welcome = turn?"Your turn":"Not your turn";
@@ -147,7 +147,7 @@ c.strokeText(welcome,700,150);
 
 }
 
-if(server){
+
 
 if(lessplayer){
     c.font = "50px Arial";
