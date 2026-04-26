@@ -1,7 +1,7 @@
 const canvas = document.getElementById('mycanvas');
 const c = canvas.getContext("2d");
 
-const socket = new WebSocket("wss://https://multiplayercrosszeroserver.onrender.com");
+const socket = new WebSocket("wss://multiplayercrosszeroserver.onrender.com");
 socket.onopen = () => {
     console.log("Connected to server");
 };
