@@ -65,13 +65,14 @@ btnpress = false;
     
     let values = JSON.parse(msg.data);
 
-    if(values.type == "1player"){
+    if(values.type === "1player"){
         lessplayer = true;
         return;
     }
-    else if(values.type == "enough players"){
-        lessplayer = false;
-    }
+    // else if(values.type == "enough players"){
+    //     lessplayer = false;
+    // }
+    lessplayer = false;
 
     if(values.type === "wait"){
         turn = false;
