@@ -19,6 +19,9 @@ let currentmove = "X";
 let over = false;
 let winner = "";
 
+
+let clients = [];
+
 function checkwinner(arr){
     for(let i = 0;i<3;i++){
         if(arr[0][i]!= "" && arr[1][i] == arr[2][i] && arr[1][i] == arr[0][i] ){
@@ -44,43 +47,102 @@ function checkwinner(arr){
     }
 }
 let data;
-wss.on("connection", (ws) => {
+wss.on("connection", (ws,req) => {
     console.log("Client connected");
-    game = [
-        ["","",""],
-        ["","",""],
-        ["","",""]
-   
+    over = false;
+     if(clients.length>=2){
+            ws.close();
+            return;
+        }
+    ws.player = clients.length == 0?"X":"O";
+    
+    clients.push(ws); 
+    ws.id = req.url.split('?id=')[1];
+    console.log(`${ws.id} has been assigned ${ws.player}`);
 
-];
- over = false;
-
+    if(ws.player=="O"){
+    ws.send(JSON.stringify({ 
+            type: "wait",
+           }));
+    }
+    
     ws.on("message", (msg) => {
         
         data = JSON.parse(msg.toString());
-        game[data.col][data.row] = data.team;
-        currentmove = data.team;
-        checkwinner(game);
+        if(currentmove!==ws.player){
+            ws.send(JSON.stringify({
+            type: "wait",
+            message: "Not your turn"
+        }));
+        return;
+        }
+        if(data.col == -1 || data.row == -1){
+            return;
+        }
+        game[data.col][data.row] = ws.player;
         
+        checkwinner(game);
+       
+        //broadcast
         wss.clients.forEach(client => {
                 if(client.readyState === WebSocket.OPEN){
 
         if(over){
              
                 client.send(JSON.stringify({
+            type: "state",
             over:true,
             win:winner,
             message: game,
-            move:currentmove}));
+            move:ws.player
+        }));
         }
         else{
          client.send(JSON.stringify({
+            type: "state",
             over:false,
             message: game,
-            move:currentmove
+            move:ws.player
         }))};
                 }})
+    if(currentmove!==ws.player)
+    {
+        ws.send(JSON.stringify({ 
+            type: "state",
+            turn: false,
+            message: game,
+            move:ws.player,
+           
+            winner: winner}));
+    }
 
+    else
+    {
+            ws.send(JSON.stringify({ 
+            type: "state",
+            turn: true,
+            message: game,
+            move:currentmove,
+            
+            winner: winner}));
+    }
+    currentmove = currentmove === "X" ? "O" : "X";
+});
+    
+    ws.on('close',()=>{
+        clients = clients.filter(p=>p!==ws);
+        // clients.delete(ws);
+        console.log("client disconnected");
+        if(clients.length < 2){
+             game = [
+        ["","",""],
+        ["","",""],
+        ["","",""]
+];
+        currentmove = "X";
+        over = false;
+        winner = "";
+        }
     });
 
      

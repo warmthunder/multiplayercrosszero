@@ -27,7 +27,10 @@ let game = [
 
 ];
 
+let intromessage = "Welcome!";
+
 let currentmove = "O";
+let turn = true;
 
 let over = false;
 let winner = "";
@@ -57,21 +60,29 @@ btnpress = false;
 })
 
  socket.onmessage = (msg)=>{
+    
     let values = JSON.parse(msg.data);
+    if(values.type === "wait"){
+        turn = false;
+        return;
+    }
     if(values.over){
         over=true;
         winner = values.win;
+        console.log(winner);
     }
-    
+    turn = true;
     game[0] = values.message[0];
     game[1] = values.message[1];
     game[2] = values.message[2];
     currentmove = values.move;
+    turn = !values.turn;
+    
 
 };
 
 function animate(){
-   
+
 
 c.fillStyle = '#F5C26B';
 c.fillRect(0,0,window.innerWidth,window.innerHeight);
@@ -104,10 +115,6 @@ c.lineWidth = 5;
 c.strokeStyle = "blue";
 c.stroke();
 
-
-
-
-
 for(let i = 0;i<3;i++){
     for(let j = 0; j<3;j++){
         if(game[i][j]!=""){
@@ -118,12 +125,19 @@ for(let i = 0;i<3;i++){
     }
 }
 
+if(!over){
+c.font = "50px Arial";
+let welcome = turn?"Your turn":"Not your turn";
+c.lineWidth = 0.8;
+c.strokeText(welcome,700,150);
+
+}
+
 if(btnpress){
     // currentmove = currentmove=="X"?"O":"X";
    
     // send mouse position to server
          socket.send(JSON.stringify({
-            team: currentmove=="X"?"O":"X",
             row: row,
             col: column
         }));
@@ -131,22 +145,15 @@ if(btnpress){
     btnpress = false;
 }
 
-if(!over){
-c.font = "50px Arial";
-let turn = currentmove=="X"?2:1;
-c.lineWidth = 0.8;
-c.strokeText(`Player ${turn}`,700,150);
-c.strokeText(`Turn`,700,200);
-}
-
-if(winner){
+if(over){
     c.font = "50px Arial";
     c.lineWidth = 0.8;
     c.strokeText(`${winner} Won!`,700,350);
 }
 if(!over)
 requestAnimationFrame(animate);
-}
 
+
+}
 animate();
 
