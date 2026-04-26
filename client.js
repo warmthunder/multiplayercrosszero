@@ -17,6 +17,8 @@ let mousex = 0;
 let mousey = 0;
 let btnpress = false;
 
+let lessplayer = false;
+
 let row = -1;
 let column = -1;
 
@@ -62,6 +64,15 @@ btnpress = false;
  socket.onmessage = (msg)=>{
     
     let values = JSON.parse(msg.data);
+
+    if(values.type == "1player"){
+        lessplayer = true;
+        return;
+    }
+    else if(values.type == "enough players"){
+        lessplayer = false;
+    }
+
     if(values.type === "wait"){
         turn = false;
         return;
@@ -125,12 +136,19 @@ for(let i = 0;i<3;i++){
     }
 }
 
-if(!over){
+if(!over && !lessplayer){
 c.font = "50px Arial";
 let welcome = turn?"Your turn":"Not your turn";
 c.lineWidth = 0.8;
 c.strokeText(welcome,700,150);
 
+}
+
+if(lessplayer){
+    c.font = "50px Arial";
+// let welcome = turn?"Your turn":"Not your turn";
+c.lineWidth = 0.8;
+c.strokeText("waiting for other player",700,150);
 }
 
 if(btnpress){
